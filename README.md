@@ -26,6 +26,11 @@ A Call for Maintainers
 
 Please read the discussiong started [here](https://github.com/go-playground/validator/discussions/1330) if you are interested in contributing/helping maintain this package.
 
+Documentation
+-------------
+
+**[中文文档 / Chinese Documentation](README_ZH.md)** - 自定义验证器指南 / Custom Validator Guide
+
 Installation
 ------------
 
@@ -63,6 +68,7 @@ Please see https://pkg.go.dev/github.com/go-playground/validator/v10 for detaile
 
 - [Simple](https://github.com/go-playground/validator/blob/master/_examples/simple/main.go)
 - [Custom Field Types](https://github.com/go-playground/validator/blob/master/_examples/custom/main.go)
+- [Custom Validator Guide](https://github.com/go-playground/validator/blob/master/_examples/custom-validator-guide/main.go) - Comprehensive guide for custom validators
 - [Struct Level](https://github.com/go-playground/validator/blob/master/_examples/struct-level/main.go)
 - [Translations & Custom Errors](https://github.com/go-playground/validator/blob/master/_examples/translations/main.go)
 - [Gin upgrade and/or override validator](https://github.com/go-playground/validator/tree/v9/_examples/gin-upgrading-overriding)

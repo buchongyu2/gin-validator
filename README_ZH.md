@@ -60,6 +60,8 @@ func validateIsAwesome(fl validator.FieldLevel) bool {
 ### 带参数的自定义验证
 
 ```go
+import "strconv"
+
 type Product struct {
     Name  string `validate:"required"`
     Price int    `validate:"required,min_price=100"`
@@ -80,11 +82,15 @@ func main() {
 
 func validateMinPrice(fl validator.FieldLevel) bool {
     price := fl.Field().Int()
-    minPrice := fl.Param() // 获取参数值，例如 "100"
+    minPriceStr := fl.Param() // 获取参数值，例如 "100"
     
-    // 将参数转换为整数并比较
-    minPriceInt := 100 // 实际应用中应该解析 fl.Param()
-    return price >= int64(minPriceInt)
+    // 将参数转换为整数
+    minPrice, err := strconv.ParseInt(minPriceStr, 10, 64)
+    if err != nil {
+        return false // 参数格式错误
+    }
+    
+    return price >= minPrice
 }
 ```
 
@@ -293,6 +299,12 @@ import (
     "github.com/go-playground/validator/v10"
 )
 
+// 预编译正则表达式以提高性能
+var (
+    usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+    phoneRegex    = regexp.MustCompile(`^1[3-9]\d{9}$`)
+)
+
 // 用户状态枚举
 type UserStatus int
 
@@ -383,16 +395,14 @@ func main() {
 // 用户名只能包含字母、数字和下划线
 func validateUsernameFormat(fl validator.FieldLevel) bool {
     username := fl.Field().String()
-    matched, _ := regexp.MatchString(`^[a-zA-Z0-9_]+$`, username)
-    return matched
+    return usernameRegex.MatchString(username)
 }
 
 // 1. 字段级别自定义验证：手机号格式
 // 简单的中国手机号验证（以 13-19 开头的 11 位数字）
 func validatePhoneFormat(fl validator.FieldLevel) bool {
     phone := fl.Field().String()
-    matched, _ := regexp.MatchString(`^1[3-9]\d{9}$`, phone)
-    return matched
+    return phoneRegex.MatchString(phone)
 }
 
 // 2. 自定义类型函数：处理 sql.Null* 类型

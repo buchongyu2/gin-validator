@@ -10,6 +10,12 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// 预编译正则表达式以提高性能
+var (
+	usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+	phoneRegex    = regexp.MustCompile(`^1[3-9]\d{9}$`)
+)
+
 // UserStatus 用户状态枚举
 type UserStatus int
 
@@ -143,16 +149,14 @@ func main() {
 // 用户名只能包含字母、数字和下划线
 func validateUsernameFormat(fl validator.FieldLevel) bool {
 	username := fl.Field().String()
-	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_]+$`, username)
-	return matched
+	return usernameRegex.MatchString(username)
 }
 
 // validatePhoneFormat 字段级别自定义验证：手机号格式
 // 简单的中国手机号验证（以 13-19 开头的 11 位数字）
 func validatePhoneFormat(fl validator.FieldLevel) bool {
 	phone := fl.Field().String()
-	matched, _ := regexp.MatchString(`^1[3-9]\d{9}$`, phone)
-	return matched
+	return phoneRegex.MatchString(phone)
 }
 
 // ValidateValuer 自定义类型函数：处理 sql.Null* 类型

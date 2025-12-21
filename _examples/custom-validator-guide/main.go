@@ -10,13 +10,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// 预编译正则表达式以提高性能
+// Pre-compiled regular expressions for better performance
 var (
 	usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 	phoneRegex    = regexp.MustCompile(`^1[3-9]\d{9}$`)
 )
 
-// UserStatus 用户状态枚举
+// UserStatus represents user status enumeration
 type UserStatus int
 
 const (
@@ -25,7 +25,7 @@ const (
 	UserStatusBanned   UserStatus = 2
 )
 
-// User 用户结构体，演示三种自定义验证方式
+// User struct demonstrates three custom validation approaches
 type User struct {
 	Username  string         `validate:"required,min=3,max=20,username_format"`
 	Email     string         `validate:"required,email"`
@@ -42,25 +42,25 @@ var validate *validator.Validate
 func main() {
 	validate = validator.New()
 
-	// 1. 注册字段级别的自定义验证
+	// 1. Register field-level custom validation
 	err := validate.RegisterValidation("username_format", validateUsernameFormat)
 	if err != nil {
-		fmt.Printf("注册验证失败: %v\n", err)
+		fmt.Printf("Failed to register validation: %v\n", err)
 		return
 	}
 	err = validate.RegisterValidation("phone_format", validatePhoneFormat)
 	if err != nil {
-		fmt.Printf("注册验证失败: %v\n", err)
+		fmt.Printf("Failed to register validation: %v\n", err)
 		return
 	}
 
-	// 2. 注册自定义类型函数
+	// 2. Register custom type function
 	validate.RegisterCustomTypeFunc(ValidateValuer, sql.NullString{})
 
-	// 3. 注册结构体级别验证
+	// 3. Register struct-level validation
 	validate.RegisterStructValidation(UserStructValidation, User{})
 
-	// 测试用例 1: 有效的用户
+	// Test case 1: Valid user
 	validUser := User{
 		Username:  "zhang_san",
 		Email:     "zhangsan@example.com",
@@ -78,9 +78,9 @@ func main() {
 		fmt.Println("✓ Validation passed")
 	}
 
-	// 测试用例 2: 无效的用户名格式
+	// Test case 2: Invalid username format
 	invalidUser := User{
-		Username:  "张三", // 包含中文，不符合格式
+		Username:  "张三", // Contains Chinese characters, doesn't match format
 		Email:     "zhangsan@example.com",
 		Age:       25,
 		Status:    UserStatusActive,
@@ -94,14 +94,14 @@ func main() {
 		fmt.Printf("✓ Expected validation failure: %v\n", err)
 	}
 
-	// 测试用例 3: 缺少姓名
+	// Test case 3: Missing name
 	noNameUser := User{
 		Username: "test_user",
 		Email:    "test@example.com",
 		Age:      25,
 		Status:   UserStatusActive,
 		Phone:    "13800138000",
-		// FirstName 和 LastName 都为空
+		// FirstName and LastName are both empty
 	}
 
 	fmt.Println("\n=== Test 3: Missing Name ===")
@@ -109,13 +109,13 @@ func main() {
 		fmt.Printf("✓ Expected validation failure: %v\n", err)
 	}
 
-	// 测试用例 4: 无效的电话号码
+	// Test case 4: Invalid phone number
 	invalidPhoneUser := User{
 		Username:  "test_user",
 		Email:     "test@example.com",
 		Age:       25,
 		Status:    UserStatusActive,
-		Phone:     "12345", // 无效的电话号码
+		Phone:     "12345", // Invalid phone number
 		FirstName: "San",
 		LastName:  "Zhang",
 	}
@@ -125,7 +125,7 @@ func main() {
 		fmt.Printf("✓ Expected validation failure: %v\n", err)
 	}
 
-	// 测试用例 5: 使用 NullString
+	// Test case 5: Using NullString
 	nullStringUser := User{
 		Username:  "test_user",
 		Email:     "test@example.com",
@@ -145,21 +145,21 @@ func main() {
 	}
 }
 
-// validateUsernameFormat 字段级别自定义验证：用户名格式
-// 用户名只能包含字母、数字和下划线
+// validateUsernameFormat is a field-level custom validation for username format
+// Username can only contain letters, numbers and underscores
 func validateUsernameFormat(fl validator.FieldLevel) bool {
 	username := fl.Field().String()
 	return usernameRegex.MatchString(username)
 }
 
-// validatePhoneFormat 字段级别自定义验证：手机号格式
-// 简单的中国手机号验证（以 13-19 开头的 11 位数字）
+// validatePhoneFormat is a field-level custom validation for phone format
+// Simple Chinese phone number validation (11 digits starting with 13-19)
 func validatePhoneFormat(fl validator.FieldLevel) bool {
 	phone := fl.Field().String()
 	return phoneRegex.MatchString(phone)
 }
 
-// ValidateValuer 自定义类型函数：处理 sql.Null* 类型
+// ValidateValuer is a custom type function that handles sql.Null* types
 func ValidateValuer(field reflect.Value) interface{} {
 	if valuer, ok := field.Interface().(driver.Valuer); ok {
 		val, err := valuer.Value()
@@ -170,11 +170,11 @@ func ValidateValuer(field reflect.Value) interface{} {
 	return nil
 }
 
-// UserStructValidation 结构体级别验证：确保至少有一个名字
+// UserStructValidation is a struct-level validation that ensures at least one name exists
 func UserStructValidation(sl validator.StructLevel) {
 	user := sl.Current().Interface().(User)
 
-	// 验证必须有 FirstName 或 LastName 其中之一
+	// Validate that either FirstName or LastName must exist
 	if len(user.FirstName) == 0 && len(user.LastName) == 0 {
 		sl.ReportError(user.FirstName, "first_name", "FirstName", "require_name", "")
 		sl.ReportError(user.LastName, "last_name", "LastName", "require_name", "")
